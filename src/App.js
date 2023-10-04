@@ -8,10 +8,13 @@ const initialTasks = {
     { id: '2', text: 'Eat Dinner' },
   ],
   inProgress: [
-    { id: '3', text: 'Finish Kanban' }
+    { id: '3', text: 'Finish Kanban' },
   ],
-  done: [],
+  done: [
+    { id: '4', text: 'Work' }
+  ],
 };
+
 
 function App() {
   const [tasks, setTasks] = useState(initialTasks);
@@ -21,12 +24,12 @@ function App() {
     setNewTask(e.target.value);
   };
 
-  const handleTaskAdd = () => {
+  const handleTaskAdd = (column) => {
     if (newTask.trim() === '') return;
     const newTaskObj = { id: Date.now().toString(), text: newTask };
     setTasks((prevState) => ({
       ...prevState,
-      todo: [...prevState.todo, newTaskObj],
+      [column]: [...prevState[column], newTaskObj],
     }));
     setNewTask('');
   };
@@ -59,11 +62,11 @@ function App() {
       const [movedTask] = sourceList.splice(source.index, 1);
       destinationList.splice(destination.index, 0, movedTask);
 
-      setTasks((prevState) => ({
-        ...prevState,
+      setTasks({
+        ...tasks,
         [source.droppableId]: sourceList,
         [destination.droppableId]: destinationList,
-      }));
+      });
     }
   };
 
@@ -76,10 +79,7 @@ function App() {
               <h3>{columnId}</h3>
               <Droppable droppableId={columnId} key={columnId}>
                 {(provided) => (
-                  <ul
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                  >
+                  <ul {...provided.droppableProps} ref={provided.innerRef}>
                     {tasks[columnId].map((task, index) => (
                       <Draggable
                         key={task.id}
@@ -115,7 +115,7 @@ function App() {
                     value={newTask}
                     onChange={handleTaskChange}
                   />
-                  <button onClick={handleTaskAdd}>
+                  <button onClick={() => handleTaskAdd(columnId)}>
                     Add Task
                   </button>
                 </div>
