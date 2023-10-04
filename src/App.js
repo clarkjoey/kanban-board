@@ -11,7 +11,8 @@ const initialTasks = {
     { id: '3', text: 'Finish Kanban' },
   ],
   done: [
-    { id: '4', text: 'Work' }
+    { id: '4', text: 'Work' },
+    { id: '5', text: 'Coffee' }
   ],
 };
 
