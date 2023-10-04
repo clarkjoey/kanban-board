@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import './App.css';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const initialTasks = {
   todo: [
-    { id: 1, text: 'Task 1' },
-    { id: 2, text: 'Task 2' },
+    { id: '1', text: 'Go to the Gym' },
+    { id: '2', text: 'Eat Dinner' },
   ],
-  inProgress: [],
+  inProgress: [
+    { id: '3', text: 'Finish Kanban' }
+  ],
   done: [],
 };
 
@@ -18,12 +21,12 @@ function App() {
     setNewTask(e.target.value);
   };
 
-  const handleTaskAdd = (column) => {
+  const handleTaskAdd = () => {
     if (newTask.trim() === '') return;
-    const newTaskObj = { id: Date.now(), text: newTask };
+    const newTaskObj = { id: Date.now().toString(), text: newTask };
     setTasks((prevState) => ({
       ...prevState,
-      [column]: [...prevState[column], newTaskObj],
+      todo: [...prevState.todo, newTaskObj],
     }));
     setNewTask('');
   };
@@ -35,13 +38,31 @@ function App() {
     }));
   };
 
-  const handleTaskMove = (taskId, fromColumn, toColumn) => {
-    const taskToMove = tasks[fromColumn].find((task) => task.id === taskId);
-    if (taskToMove) {
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { source, destination } = result;
+
+    if (source.droppableId === destination.droppableId) {
+      const updatedTasks = [...tasks[source.droppableId]];
+      const [removedTask] = updatedTasks.splice(source.index, 1);
+      updatedTasks.splice(destination.index, 0, removedTask);
+
+      setTasks({
+        ...tasks,
+        [source.droppableId]: updatedTasks,
+      });
+    } else {
+      const sourceList = [...tasks[source.droppableId]];
+      const destinationList = [...tasks[destination.droppableId]];
+
+      const [movedTask] = sourceList.splice(source.index, 1);
+      destinationList.splice(destination.index, 0, movedTask);
+
       setTasks((prevState) => ({
         ...prevState,
-        [fromColumn]: prevState[fromColumn].filter((task) => task.id !== taskId),
-        [toColumn]: [...prevState[toColumn], taskToMove],
+        [source.droppableId]: sourceList,
+        [destination.droppableId]: destinationList,
       }));
     }
   };
@@ -49,43 +70,59 @@ function App() {
   return (
     <div className="App">
       <div className="KanbanBoard">
-        <div className="Column">
-          <h3>To Do</h3>
-          <ul>
-            {tasks.todo.map((task) => (
-              <li key={task.id}>
-                {task.text}
-                <button onClick={() => handleTaskDelete('todo', task.id)}>Delete</button>
-                <button onClick={() => handleTaskMove(task.id, 'todo', 'inProgress')}>Start</button>
-              </li>
-            ))}
-          </ul>
-          <input type="text" value={newTask} onChange={handleTaskChange} />
-          <button onClick={() => handleTaskAdd('todo')}>Add Task</button>
-        </div>
-        <div className="Column">
-          <h3>In Progress</h3>
-          <ul>
-            {tasks.inProgress.map((task) => (
-              <li key={task.id}>
-                {task.text}
-                <button onClick={() => handleTaskDelete('inProgress', task.id)}>Delete</button>
-                <button onClick={() => handleTaskMove(task.id, 'inProgress', 'done')}>Complete</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="Column">
-          <h3>Done</h3>
-          <ul>
-            {tasks.done.map((task) => (
-              <li key={task.id}>
-                {task.text}
-                <button onClick={() => handleTaskDelete('done', task.id)}>Delete</button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          {Object.keys(initialTasks).map((columnId) => (
+            <div className="Column" key={columnId}>
+              <h3>{columnId}</h3>
+              <Droppable droppableId={columnId} key={columnId}>
+                {(provided) => (
+                  <ul
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {tasks[columnId].map((task, index) => (
+                      <Draggable
+                        key={task.id}
+                        draggableId={task.id}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <li
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            {task.text}
+                            <button
+                              onClick={() =>
+                                handleTaskDelete(columnId, task.id)
+                              }
+                            >
+                              Delete
+                            </button>
+                          </li>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </ul>
+                )}
+              </Droppable>
+              {columnId === 'todo' && (
+                <div className="AddTask">
+                  <input
+                    type="text"
+                    value={newTask}
+                    onChange={handleTaskChange}
+                  />
+                  <button onClick={handleTaskAdd}>
+                    Add Task
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </DragDropContext>
       </div>
     </div>
   );

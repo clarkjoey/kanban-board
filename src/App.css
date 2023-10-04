@@ -38,14 +38,16 @@ ul {
 }
 
 li {
+  width: 200px; /* Fixed width for square cards */
+  height: 200px; /* Fixed height for square cards */
   margin: 10px 0;
-  padding: 5px;
+  padding: 10px;
   border: 1px solid #ddd;
   background-color: #fff;
   border-radius: 5px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between; /* Vertically align content */
 }
 
 button {
@@ -55,7 +57,7 @@ button {
   border-radius: 3px;
   padding: 5px 10px;
   cursor: pointer;
-  margin-left: 5px;
+  margin: 5px 0; /* Add spacing between buttons */
 }
 
 input[type="text"] {
