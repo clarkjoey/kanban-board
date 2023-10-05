@@ -1,72 +1,26 @@
-/* App.css */
-
-.App {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f0f0f0;
-}
-
-.KanbanBoard {
+.kanban-board {
   display: flex;
   justify-content: space-around;
-  width: 80%;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
 }
 
-.Column {
-  flex: 1;
+.kanban-column {
+  background-color: #f0f0f0;
+  width: 300px;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  margin: 0 10px;
-  min-width: 200px;
+  border-radius: 4px;
+  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+  margin: 10px;
 }
 
-h3 {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
+.kanban-task-list {
+  min-height: 100px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  width: 200px; /* Fixed width for square cards */
-  height: 200px; /* Fixed height for square cards */
-  margin: 10px 0;
-  padding: 10px;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Vertically align content */
-}
-
-button {
-  background-color: #e74c3c;
-  color: #fff;
-  border: none;
-  border-radius: 3px;
-  padding: 5px 10px;
-  cursor: pointer;
-  margin: 5px 0; /* Add spacing between buttons */
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-button:hover {
-  background-color: #c0392b;
+.kanban-task {
+  background-color: white;
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 4px;
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
 }
