@@ -4,9 +4,9 @@ const initialData = {
   todo: {
     title: 'To Do',
     items: [
-      { id: 'task-1', content: 'Task 1' },
-      { id: 'task-2', content: 'Task 2' },
-      { id: 'task-3', content: 'Task 3' },
+      { id: 'task-1', content: 'Eat Food' },
+      { id: 'task-2', content: 'Commit to Git' },
+      { id: 'task-3', content: 'Workout' },
     ],
   },
   inProgress: {
@@ -51,17 +51,27 @@ const KanbanBoard = () => {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, columnId) => {
+    handleDragEnter(e, columnId);
+  };
+
   return (
     <div className="kanban-board">
       {Object.keys(data).map((columnId) => {
         const column = data[columnId];
         return (
-          <div key={columnId} className="kanban-column">
+          <div
+            key={columnId}
+            className="kanban-column"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, columnId)}
+          >
             <h2>{column.title}</h2>
-            <div
-              onDragEnter={(e) => handleDragEnter(e, columnId)}
-              className="kanban-task-list"
-            >
+            <div className="kanban-task-list">
               {column.items.map((item) => (
                 <div
                   key={item.id}
