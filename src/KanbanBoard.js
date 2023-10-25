@@ -4,9 +4,9 @@ const initialData = {
   todo: {
     title: 'To Do',
     items: [
-      { id: 'task-1', content: 'Work' },
-      { id: 'task-2', content: 'Eat' },
-      { id: 'task-3', content: 'Sleep' },
+      { id: 'task-1', name: 'Work', description: 'Make sure you get that demo done for Dell'},
+      { id: 'task-2', name: 'Eat', description: 'Order Indian food with extra garlic naan'},
+      { id: 'task-3', name: 'Sleep', description: 'Be in bed by 12am'},
     ],
     inputId: 'input-1',
   },
@@ -74,7 +74,7 @@ const KanbanBoard = () => {
     if (newTaskText[inputId].trim() === '') return;
 
     const newData = { ...data };
-    const newTask = { id: `task-${Date.now()}`, content: newTaskText[inputId] };
+    const newTask = { id: `task-${Date.now()}`, name: newTaskText[inputId], description: "-" };
     newData[columnId].items.push(newTask);
     setData(newData);
 
@@ -113,13 +113,17 @@ const KanbanBoard = () => {
             </div>
             <div className="kanban-task-list">
               {column.items.map((item) => (
-                <div
+                <div class="card" 
                   key={item.id}
-                  className="kanban-task"
+                  className="card"
                   draggable
-                  onDragStart={(e) => handleDragStart(e, item, columnKey)}
-                >
-                  {item.content}
+                  onDragStart={(e) => handleDragStart(e, item, columnKey)}>
+                  <div className="card-body">
+                    <h5 className="card-title">{item.name}</h5>
+                    <p className="card-text">{item.description}</p>
+                    <a className="btn btn-secondary">Edit</a>
+                    <a className="btn btn-primary">Delete</a>
+                  </div>
                 </div>
               ))}
             </div>
