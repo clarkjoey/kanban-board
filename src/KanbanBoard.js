@@ -4,9 +4,9 @@ const initialData = {
   todo: {
     title: 'To Do',
     items: [
-      { id: 'task-1', name: 'Work', description: 'Make sure you get that demo done for Dell'},
-      { id: 'task-2', name: 'Eat', description: 'Order Indian food with extra garlic naan'},
-      { id: 'task-3', name: 'Sleep', description: 'Be in bed by 12am'},
+      { id: 'task-1', name: 'Work', description: 'Make sure you get that demo done for Dell' },
+      { id: 'task-2', name: 'Eat', description: 'Order Indian food with extra garlic naan' },
+      { id: 'task-3', name: 'Sleep', description: 'Be in bed by 12am' },
     ],
     inputId: 'input-1',
   },
@@ -26,6 +26,7 @@ const KanbanBoard = () => {
   const [data, setData] = useState(initialData);
   const [draggedItem, setDraggedItem] = useState(null);
   const [newTaskText, setNewTaskText] = useState({});
+  const [editableCards, setEditableCards] = useState({}); // State to track editable cards
 
   const handleDragStart = (e, item, columnId) => {
     setDraggedItem({ item, columnId });
@@ -85,6 +86,23 @@ const KanbanBoard = () => {
     });
   };
 
+  const toggleEditCard = (columnId, itemId) => {
+    const updatedEditableCards = { ...editableCards };
+    updatedEditableCards[`${columnId}-${itemId}`] = !editableCards[`${columnId}-${itemId}`];
+    setEditableCards(updatedEditableCards);
+  };
+
+  const handleEditDescription = (e, columnId, itemId) => {
+    const newData = { ...data };
+    const editedDescription = e.target.value;
+    const card = newData[columnId].items.find((item) => item.id === itemId);
+
+    if (card) {
+      card.description = editedDescription;
+      setData(newData);
+    }
+  };
+
   return (
     <div className="kanban-board">
       {Object.keys(data).map((columnKey) => {
@@ -113,21 +131,48 @@ const KanbanBoard = () => {
             </div>
             <div className="kanban-task-list">
               {column.items.map((item) => (
-                <div class="card" 
+                <div
                   key={item.id}
                   className="card"
                   draggable
-                  onDragStart={(e) => handleDragStart(e, item, columnKey)}>
+                  onDragStart={(e) => handleDragStart(e, item, columnKey)}
+                >
                   <div className="card-body">
                     <h5 className="card-title">{item.name}</h5>
-                    <p className="card-text">{item.description}</p>
-                    <a className="btn btn-secondary">Edit</a>
-                    <a className="btn btn-primary">Delete</a>
+                    {editableCards[`${columnKey}-${item.id}`] ? (
+                      <div>
+                        <textarea
+                          className="card-text"
+                          value={item.description}
+                          onChange={(e) =>
+                            handleEditDescription(e, columnKey, item.id)
+                          }
+                        />
+                        <button
+                          className="btn btn-success" // Change to "Save" button
+                          onClick={() => toggleEditCard(columnKey, item.id)}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="card-text">{item.description}</p>
+                        {!editableCards[`${columnKey}-${item.id}`] && (
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => toggleEditCard(columnKey, item.id)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <button className="btn btn-primary">Delete</button>
                   </div>
                 </div>
               ))}
             </div>
-            
           </div>
         );
       })}
