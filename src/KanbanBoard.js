@@ -159,16 +159,18 @@ const KanbanBoard = () => {
                       <div>
                         <p className="card-text">{item.description}</p>
                         {!editableCards[`${columnKey}-${item.id}`] && (
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() => toggleEditCard(columnKey, item.id)}
-                          >
-                            Edit
-                          </button>
+                          <div className="button-container">
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => toggleEditCard(columnKey, item.id)}
+                            >
+                              Edit
+                            </button>
+                            <button className="btn btn-primary">Delete</button>
+                          </div>
                         )}
                       </div>
                     )}
-                    <button className="btn btn-primary">Delete</button>
                   </div>
                 </div>
               ))}

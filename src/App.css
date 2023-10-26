@@ -25,7 +25,34 @@
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
   min-height: 150px;
 }
-input {
-  position: relative;
-  bottom: 0px;
+
+.button-container {
+  display: flex;
+  gap: 4px; /* Adjust the value to control the padding between buttons */
+}
+
+.card {
+  margin: 8px 0;
+}
+
+.kanban-task {
+  background-color: white;
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 4px;
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  min-height: 150px;
+  position: relative; /* Relative positioning for the card */
+}
+
+.button-container {
+  position: absolute;
+  bottom: 1rem; /* Position at the bottom */
+  right: 1rem; /* Position at the right */
+  display: flex;
+  gap: 8px; /* Adjust the value to control the padding between buttons */
+}
+
+.card-text {
+  margin-bottom: 4rem;
 }
