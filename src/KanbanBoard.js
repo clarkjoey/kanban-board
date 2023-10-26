@@ -103,6 +103,19 @@ const KanbanBoard = () => {
     }
   };
 
+  const handleDeleteTask = (columnId, taskId) => {
+    const newData = { ...data };
+    const columnIndex = Object.keys(newData).findIndex((key) => key === columnId);
+
+    if (columnIndex !== -1) {
+      const taskIndex = newData[columnId].items.findIndex((item) => item.id === taskId);
+      if (taskIndex !== -1) {
+        newData[columnId].items.splice(taskIndex, 1);
+        setData(newData);
+      }
+    }
+  };
+
   return (
     <div className="kanban-board">
       {Object.keys(data).map((columnKey) => {
@@ -166,7 +179,12 @@ const KanbanBoard = () => {
                             >
                               Edit
                             </button>
-                            <button className="btn btn-primary">Delete</button>
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleDeleteTask(columnKey, item.id)}
+                            >
+                              Delete
+                            </button>
                           </div>
                         )}
                       </div>
