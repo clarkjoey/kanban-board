@@ -28,10 +28,12 @@ const KanbanBoard = () => {
   const [newTaskText, setNewTaskText] = useState({});
   const [editableCards, setEditableCards] = useState({}); // State to track editable cards
 
+  // Function to handle the start of dragging a task
   const handleDragStart = (e, item, columnId) => {
     setDraggedItem({ item, columnId });
   };
 
+  // Function to handle when a task is dragged into a column
   const handleDragEnter = (e, columnId) => {
     if (draggedItem) {
       const newData = { ...data };
@@ -56,14 +58,17 @@ const KanbanBoard = () => {
     }
   };
 
+  // Function to handle drag over (prevents default behavior)
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
+  // Function to handle dropping a task into a column
   const handleDrop = (e, columnId) => {
     handleDragEnter(e, columnId);
   };
 
+  // Function to handle changes in the input field for creating new tasks
   const handleNewTaskChange = (e, inputId) => {
     setNewTaskText({
       ...newTaskText,
@@ -71,6 +76,7 @@ const KanbanBoard = () => {
     });
   };
 
+  // Function to create a new task in a column
   const handleCreateTask = (columnId, inputId) => {
     if (newTaskText[inputId].trim() === '') return;
 
@@ -86,12 +92,14 @@ const KanbanBoard = () => {
     });
   };
 
+  // Function to toggle card editing mode
   const toggleEditCard = (columnId, itemId) => {
     const updatedEditableCards = { ...editableCards };
     updatedEditableCards[`${columnId}-${itemId}`] = !editableCards[`${columnId}-${itemId}`];
     setEditableCards(updatedEditableCards);
   };
 
+  // Function to handle editing of task description
   const handleEditDescription = (e, columnId, itemId) => {
     const newData = { ...data };
     const editedDescription = e.target.value;
@@ -103,6 +111,7 @@ const KanbanBoard = () => {
     }
   };
 
+  // Function to delete a task
   const handleDeleteTask = (columnId, taskId) => {
     const newData = { ...data };
     const columnIndex = Object.keys(newData).findIndex((key) => key === columnId);
