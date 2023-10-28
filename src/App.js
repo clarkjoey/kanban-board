@@ -5,7 +5,7 @@ import KanbanBoard from './KanbanBoard';
 function App() {
   return (
     <div className="App">
-      <h1>React Kanban Board</h1>
+      <h1>Joe's Kanban Board</h1>
       <KanbanBoard />
     </div>
   );
