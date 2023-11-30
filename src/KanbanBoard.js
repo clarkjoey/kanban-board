@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 const initialData = {
-  todo: {
+  col1: {
     title: 'Do Today',
     items: [
       { id: 'task-1', name: 'Work', description: 'Make sure you get that demo done for Dell' },
@@ -10,17 +10,17 @@ const initialData = {
     ],
     inputId: 'input-1',
   },
-  inProgress: {
+  col2: {
     title: 'Do This Week',
     items: [],
     inputId: 'input-2',
   },
-  eventually: {
-    title: 'Eventually',
+  col3: {
+    title: 'Done',
     items: [],
     inputId: 'input-3',
   },
-  done: {
+  col4: {
     title: 'Follow Up On',
     items: [],
     inputId: 'input-4',
@@ -31,7 +31,10 @@ const KanbanBoard = () => {
   const [data, setData] = useState(initialData);
   const [draggedItem, setDraggedItem] = useState(null);
   const [newTaskText, setNewTaskText] = useState({});
-  const [editableCards, setEditableCards] = useState({}); // State to track editable cards
+  const [editableCards, setEditableCards] = useState({});
+  const [editableColumnTitles, setEditableColumnTitles] = useState({});
+  const inputRef = useRef(null); // Ref for the input field
+
 
   // Function to handle the start of dragging a task
   const handleDragStart = (e, item, columnId) => {
@@ -131,14 +134,57 @@ const KanbanBoard = () => {
     }
   };
 
+  // Function to toggle column title editing mode
+  const toggleEditColumnTitle = (columnId) => {
+    // Check if inputRef exists before trying to focus
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    // Toggle the edit mode for the column title
+    setEditableColumnTitles((prevEditable) => ({
+      ...prevEditable,
+      [columnId]: !prevEditable[columnId],
+    }));
+  };
+
+  // Function to handle editing and saving column titles
+  const handleEditColumnTitle = (e, columnId) => {
+    const newData = { ...data };
+    newData[columnId].title = e.target.value;
+    setData(newData);
+  };
+
+  // Function to handle keydown events in the input field
+  const handleInputKeyDown = (e, columnId) => {
+    if (e.key === 'Enter') {
+      toggleEditColumnTitle(columnId);
+    }
+  };
+
   return (
     <div className="kanban-board">
       {Object.keys(data).map((columnKey) => {
         const column = data[columnKey];
+        const isEditableTitle = editableColumnTitles[columnKey];
+
         return (
           <div key={columnKey} className="kanban-column" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, columnKey)}>
             {/* column title */}
-            <h5 className="display-7">{column.title}</h5>
+            <h5 className={`display-7 ${isEditableTitle ? 'editable' : ''}`} onClick={() => toggleEditColumnTitle(columnKey)}>
+              {isEditableTitle ? (
+                <input
+                  type="text"
+                  value={column.title}
+                  onChange={(e) => handleEditColumnTitle(e, columnKey)} // Add onChange handler
+                  onKeyDown={(e) => handleInputKeyDown(e, columnKey)} // Handle Enter key press
+                  onBlur={() => toggleEditColumnTitle(columnKey)}
+                  onClick={(e) => e.stopPropagation()} // Prevent click event propagation
+                  ref={inputRef} // Attach the ref to the input field
+                />
+              ) : (
+                column.title
+              )}
+            </h5>
             {/* this is the input field */}
             <div className="kanban-new-task input-group input-group-sm mb-3">
               <input className='form-control' id={column.inputId} type="text" placeholder="Write a task name" value={newTaskText[column.inputId] || ''} onChange={(e) => handleNewTaskChange(e, column.inputId)}/>
