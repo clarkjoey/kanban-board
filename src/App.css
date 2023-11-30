@@ -5,7 +5,7 @@
 }
 
 .kanban-column {
-  background-color: #f0f0f0;
+  background-color: #fafafa;
   width: 300px;
   padding: 10px;
   border-radius: 4px;
@@ -14,7 +14,7 @@
 }
 
 .kanban-task-list {
-  min-height: 300px;
+  min-height: calc(100vh - 166px);
 }
 
 .kanban-task {
@@ -55,4 +55,8 @@
 
 .card-text {
   margin-bottom: 4rem;
+}
+
+.card-text-area {
+  margin-bottom: 1rem;
 }

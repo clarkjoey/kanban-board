@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const initialData = {
   todo: {
-    title: 'To Do',
+    title: 'Do Today',
     items: [
       { id: 'task-1', name: 'Work', description: 'Make sure you get that demo done for Dell' },
       { id: 'task-2', name: 'Eat', description: 'Order Indian food with extra garlic naan' },
@@ -11,14 +11,19 @@ const initialData = {
     inputId: 'input-1',
   },
   inProgress: {
-    title: 'In Progress',
+    title: 'Do This Week',
     items: [],
     inputId: 'input-2',
   },
-  done: {
-    title: 'Done',
+  eventually: {
+    title: 'Eventually',
     items: [],
     inputId: 'input-3',
+  },
+  done: {
+    title: 'Follow Up On',
+    items: [],
+    inputId: 'input-4',
   },
 };
 
@@ -76,15 +81,16 @@ const KanbanBoard = () => {
     });
   };
 
-  // Function to create a new task in a column
   const handleCreateTask = (columnId, inputId) => {
-    if (newTaskText[inputId].trim() === '') return;
-
+    const taskText = newTaskText[inputId];
+  
+    if (!taskText || taskText.trim() === '') return; // Check if taskText is empty or undefined
+  
     const newData = { ...data };
-    const newTask = { id: `task-${Date.now()}`, name: newTaskText[inputId], description: "-" };
+    const newTask = { id: `task-${Date.now()}`, name: taskText, description: "-" };
     newData[columnId].items.push(newTask);
     setData(newData);
-
+  
     // Clear the input field
     setNewTaskText({
       ...newTaskText,
@@ -130,50 +136,30 @@ const KanbanBoard = () => {
       {Object.keys(data).map((columnKey) => {
         const column = data[columnKey];
         return (
-          <div
-            key={columnKey}
-            className="kanban-column"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, columnKey)}
-          >
-            <h2>{column.title}</h2>
-            <div className="kanban-new-task">
-              <input
-                id={column.inputId}
-                type="text"
-                placeholder="New task..."
-                value={newTaskText[column.inputId] || ''}
-                onChange={(e) => handleNewTaskChange(e, column.inputId)}
-              />
-              <button
-                onClick={() => handleCreateTask(columnKey, column.inputId)}
-              >
-                Create
-              </button>
+          <div key={columnKey} className="kanban-column" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, columnKey)}>
+            {/* column title */}
+            <h5 className="display-7">{column.title}</h5>
+            {/* this is the input field */}
+            <div className="kanban-new-task input-group input-group-sm mb-3">
+              <input className='form-control' id={column.inputId} type="text" placeholder="Write a task name" value={newTaskText[column.inputId] || ''} onChange={(e) => handleNewTaskChange(e, column.inputId)}/>
+              <div className="input-group-prepend">
+                <button className="btn btn-outline-secondary" onClick={() => handleCreateTask(columnKey, column.inputId)}>
+                  Create
+                </button>
+              </div>
             </div>
+            {/* card container */}
             <div className="kanban-task-list">
               {column.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="card"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item, columnKey)}
-                >
+                // task card
+                <div key={item.id} className="card" draggable onDragStart={(e) => handleDragStart(e, item, columnKey)}>
                   <div className="card-body">
                     <h5 className="card-title">{item.name}</h5>
                     {editableCards[`${columnKey}-${item.id}`] ? (
+                      // saving edits
                       <div>
-                        <textarea
-                          className="card-text"
-                          value={item.description}
-                          onChange={(e) =>
-                            handleEditDescription(e, columnKey, item.id)
-                          }
-                        />
-                        <button
-                          className="btn btn-success" // Change to "Save" button
-                          onClick={() => toggleEditCard(columnKey, item.id)}
-                        >
+                        <textarea className="card-text-area form-control" value={item.description} onChange={(e) => handleEditDescription(e, columnKey, item.id)}/>
+                        <button className="btn btn-success" onClick={() => toggleEditCard(columnKey, item.id)}>
                           Save
                         </button>
                       </div>
@@ -181,17 +167,12 @@ const KanbanBoard = () => {
                       <div>
                         <p className="card-text">{item.description}</p>
                         {!editableCards[`${columnKey}-${item.id}`] && (
+                          // edit or delete card
                           <div className="button-container">
-                            <button
-                              className="btn btn-secondary"
-                              onClick={() => toggleEditCard(columnKey, item.id)}
-                            >
+                            <button className="btn btn-secondary" onClick={() => toggleEditCard(columnKey, item.id)}>
                               Edit
                             </button>
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => handleDeleteTask(columnKey, item.id)}
-                            >
+                            <button className="btn btn-primary" onClick={() => handleDeleteTask(columnKey, item.id)}>
                               Delete
                             </button>
                           </div>
