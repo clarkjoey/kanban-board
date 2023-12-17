@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
+require('dotenv').config();
 
-// const uri = 'mongodb+srv://joeclark3516:kanban123@kanbancluster.vvfr88g.mongodb.net/';
 const uri = process.env.MONGODB_URI;
 const dbName = 'KanbanDB';
 
