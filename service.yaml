@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kanban-app-service  # Choose a meaningful name for your service
+spec:
+  selector:
+    app: kanban-app-deployment  # Match this label with the one used in your Deployment
+  ports:
+  - protocol: TCP
+    port: 80  # The port on which your service will listen
+    targetPort: 3000  # The port on which your application inside the pods is running
+  type: LoadBalancer

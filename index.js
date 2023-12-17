@@ -105,12 +105,12 @@ app.delete('/tasks/remove/:id', async (req, res) => {
 });
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // Define a catch-all route to serve the React app
 app.get('*', (req, res) => {
   // Construct the correct file path to your index.html
-  const indexPath = path.join(__dirname, '..', 'client', 'build', 'index.html');
+  const indexPath = path.join(__dirname, 'client', 'build', 'index.html');
   res.sendFile(indexPath);
 });
 
