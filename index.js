@@ -24,7 +24,8 @@ app.use(session({
 //     baseURL: 'http://localhost:3000',
 //   })
 // );
-Prod
+
+// Prod
 app.use(
   auth({
     authRequired: false,
