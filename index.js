@@ -7,42 +7,78 @@ const app = express(); // Express
 
 const { auth, requiresAuth } = require('express-openid-connect'); // Auth0
 
-// const config = {
-//   authRequired: false,
-//   auth0Logout: true,
-//   secret: '4824117331ab87bbe76209552f007c16732912b205d86165ccf67a4e7d649bb0',
-//   baseURL: 'http://localhost:3000',
-//   clientID: 'Q4pRYnAYLILxhCtqJetXY51Ypi5Ht2I4',
-//   issuerBaseURL: 'https://dev-42nhciwkn0dhfls6.us.auth0.com'
-// };
+const session = require('express-session');
+
+app.use(session({
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // for HTTPS use `secure: true`
+}));
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
-// app.use(auth(config));
+// Local
 app.use(
   auth({
     authRequired: false,
     baseURL: 'http://localhost:3000',
   })
 );
-
-// // req.isAuthenticated is provided from the auth router
-// app.get('/', (req, res) => {
-//   res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-// });
+// Prod
+// app.use(
+//   auth({
+//     authRequired: false,
+//   })
+// );
 
 app.get('/profile', requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));
 });
 
 // Middleware
-app.use(express.json()); // Use express for JSON parsing
+app.use(express.json()); // JSON parsing
 app.use(cors()); // Use the cors middleware
+
+/* TRYING STORE LOGIN IN DB */
+app.get('/', requiresAuth(), async (req, res) => {
+  if (!req.session.userProcessed) {
+    console.log("Processing user for the first time");
+    try {
+      const auth0UserId = req.oidc.user.sub;
+      const email = req.oidc.user.email;
+      const name = req.oidc.user.name;
+  
+      let user = await dal.userExists({ auth0Id: auth0UserId });
+      if (!user) {
+        // Create a new user in MongoDB
+        let newUser = await dal.createUser({
+          auth0Id: auth0UserId,
+          email: email,
+          name: name,
+        });
+        console.log(newUser);
+      } else {
+        console.log("user exists")
+      }
+    } catch (error) {
+      console.error('Error querying MongoDB:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    req.session.userProcessed = true;
+  } 
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
+app.get('/resetSession', (req, res) => {
+  // Reset the session flag
+  req.session.userProcessed = false;
+  res.redirect('/logout');
+});
 
 // Find All Tasks
 app.get('/tasks', async (req, res) => {
   try {
     const docs = await dal.tasks();
-    console.log(docs);
     res.send(docs);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -54,7 +90,6 @@ app.get('/tasks', async (req, res) => {
 app.get('/columns', async (req, res) => {
   try {
     const docs = await dal.columns();
-    console.log(docs);
     res.send(docs);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -67,7 +102,6 @@ app.post('/tasks/create', async (req, res) => {
   try {
     const { name, id, column } = req.body;
     const user = await dal.create(name, id, column);
-    console.log(user);
     res.send(user);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -125,7 +159,6 @@ app.post('/columns/title', async (req, res) => {
 app.delete('/tasks/remove/:id', async (req, res) => {
   try {
     const result = await dal.remove(req.params.id);
-    console.log(result);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -135,6 +168,8 @@ app.delete('/tasks/remove/:id', async (req, res) => {
 
 // Serve static files from the React app in the 'client/build' directory
 app.use(requiresAuth(), express.static(path.join(__dirname, 'client/build')));
+
+
 
 // Handles any requests that don't match the ones above
 app.get('*', requiresAuth(), (req, res) => {

@@ -45,6 +45,39 @@ async function closeMongoDBConnection() {
     }
 }
 
+// check if user exists
+async function userExists({auth0Id}) {
+  try {
+    const collection = db.collection('Users');
+    const result = await collection.find({ "auth0Id": auth0Id }).toArray();
+    if (result.length === 0) {
+      return false;
+    }
+    return result;
+  } catch (error) {
+      throw error;
+  }
+}
+
+// add a user
+async function createUser({ auth0Id, email, name }) {
+  try {
+    const doc = { auth0Id, email, name };
+    const collection = db.collection('Users');
+    // add to the DB
+    const insertResult = await collection.insertOne(doc);
+    // return the account info
+    if (insertResult.acknowledged) {
+      const findResult = await collection.find({ "email": email }).toArray();
+      return findResult;
+    } else {
+        return { error: "No documents inserted" }; // no documents were inserted
+    }
+  } catch (error) {
+      throw error;
+  }
+}
+
 // all tasks
 // path: /tasks
 async function tasks(){
@@ -186,4 +219,6 @@ module.exports = {
     client, // Export the MongoDB client
     connectToMongoDB, // Export the connectToMongoDB function
     closeMongoDBConnection, // Export the closeMongoDBConnection function
+    createUser,
+    userExists,
 };
