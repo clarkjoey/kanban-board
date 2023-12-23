@@ -1,9 +1,38 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // Don't forget to require path
+const path = require('path');
 const dal = require('./dal');
 
-const app = express();
+const app = express(); // Express
+
+const { auth, requiresAuth } = require('express-openid-connect'); // Auth0
+
+// const config = {
+//   authRequired: false,
+//   auth0Logout: true,
+//   secret: '4824117331ab87bbe76209552f007c16732912b205d86165ccf67a4e7d649bb0',
+//   baseURL: 'http://localhost:3000',
+//   clientID: 'Q4pRYnAYLILxhCtqJetXY51Ypi5Ht2I4',
+//   issuerBaseURL: 'https://dev-42nhciwkn0dhfls6.us.auth0.com'
+// };
+
+// auth router attaches /login, /logout, and /callback routes to the baseURL
+// app.use(auth(config));
+app.use(
+  auth({
+    authRequired: false,
+    baseURL: 'http://localhost:3000',
+  })
+);
+
+// // req.isAuthenticated is provided from the auth router
+// app.get('/', (req, res) => {
+//   res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+// });
+
+app.get('/profile', requiresAuth(), (req, res) => {
+  res.send(JSON.stringify(req.oidc.user));
+});
 
 // Middleware
 app.use(express.json()); // Use express for JSON parsing
@@ -105,10 +134,10 @@ app.delete('/tasks/remove/:id', async (req, res) => {
 });
 
 // Serve static files from the React app in the 'client/build' directory
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(requiresAuth(), express.static(path.join(__dirname, 'client/build')));
 
 // Handles any requests that don't match the ones above
-app.get('*', (req, res) => {
+app.get('*', requiresAuth(), (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build/index.html'));
 });
 
