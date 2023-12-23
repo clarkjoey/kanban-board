@@ -17,19 +17,19 @@ app.use(session({
 }));
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
-// Local
-app.use(
-  auth({
-    authRequired: false,
-    baseURL: 'http://localhost:3000',
-  })
-);
-// Prod
+// // Local
 // app.use(
 //   auth({
 //     authRequired: false,
+//     baseURL: 'http://localhost:3000',
 //   })
 // );
+Prod
+app.use(
+  auth({
+    authRequired: false,
+  })
+);
 
 app.get('/profile', requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));
