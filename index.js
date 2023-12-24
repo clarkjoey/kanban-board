@@ -17,35 +17,31 @@ app.use(session({
 }));
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
-// // Local
-// app.use(
-//   auth({
-//     authRequired: false,
-//     baseURL: 'http://localhost:3000',
-//   })
-// );
-
-// Prod
+// Local
 app.use(
   auth({
     authRequired: false,
-    auth0Logout: true,
-    secret: process.env.SECRET,
-    baseURL: process.env.BASE_URL,
-    clientID: process.env.CLIENT_ID,
-    issuerBaseURL: process.env.ISSUER_BASE_URL
+    baseURL: 'http://localhost:3000',
   })
 );
 
-app.get('/profile', requiresAuth(), (req, res) => {
-  res.send(JSON.stringify(req.oidc.user));
-});
+// // Prod
+// app.use(
+//   auth({
+//     authRequired: false,
+//     auth0Logout: true,
+//     secret: process.env.SECRET,
+//     baseURL: process.env.BASE_URL,
+//     clientID: process.env.CLIENT_ID,
+//     issuerBaseURL: process.env.ISSUER_BASE_URL
+//   })
+// );
 
 // Middleware
 app.use(express.json()); // JSON parsing
 app.use(cors()); // Use the cors middleware
 
-/* TRYING STORE LOGIN IN DB */
+// Starting route - handles new user db storage
 app.get('/', requiresAuth(), async (req, res) => {
   if (!req.session.userProcessed) {
     console.log("Processing user for the first time");
@@ -75,6 +71,22 @@ app.get('/', requiresAuth(), async (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
+app.get('/profile', requiresAuth(), async (req, res) => {
+  try {
+    const auth0UserId = req.oidc.user.sub;
+    const user = await dal.userExists({ auth0Id: auth0UserId });
+    if (user) {
+      res.json({ flowId: user[0].flowId }); // Send the user ID to the frontend
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Handles logout and session reset
 app.get('/resetSession', (req, res) => {
   // Reset the session flag
   req.session.userProcessed = false;
@@ -85,6 +97,15 @@ app.get('/resetSession', (req, res) => {
 app.get('/tasks', async (req, res) => {
   try {
     const docs = await dal.tasks();
+    res.send(docs);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+app.get('/tasks/:userId', async (req, res) => {
+  try {
+    const docs = await dal.tasks(req.params.userId);
     res.send(docs);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -104,10 +125,20 @@ app.get('/columns', async (req, res) => {
 });
 
 // Create A Task
+// app.post('/tasks/create', async (req, res) => {
+//   try {
+//     const { name, id, column } = req.body;
+//     const user = await dal.create(name, id, column);
+//     res.send(user);
+//   } catch (error) {
+//     console.error('Error querying MongoDB:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 app.post('/tasks/create', async (req, res) => {
   try {
-    const { name, id, column } = req.body;
-    const user = await dal.create(name, id, column);
+    const { name, id, column, userId } = req.body;
+    const user = await dal.create(name, id, column, userId);
     res.send(user);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -177,10 +208,10 @@ app.use(requiresAuth(), express.static(path.join(__dirname, 'client/build')));
 
 
 
-// Handles any requests that don't match the ones above
-app.get('*', requiresAuth(), (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build/index.html'));
-});
+// // Handles any requests that don't match the ones above
+// app.get('*', requiresAuth(), (req, res) => {
+//   res.sendFile(path.join(__dirname, 'client/build/index.html'));
+// });
 
 const port = process.env.PORT || 3000;
 

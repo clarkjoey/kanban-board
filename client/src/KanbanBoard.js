@@ -1,18 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const KanbanBoard = () => {
+const KanbanBoard = (props) => {
   const [data, setData] = useState(null);
   const [draggedItem, setDraggedItem] = useState(null);
   const [newTaskText, setNewTaskText] = useState({});
   const [editableCards, setEditableCards] = useState('');
   const [editableColumnTitles, setEditableColumnTitles] = useState({});
-  const inputRef = useRef(null); // Ref for the input field
+  const inputRef = useRef(null); // ref for the input field
+  const {userId} = props; // current logged in user
 
   
   // Function to fetch tasks from the server
   const fetchTasks = async () => {
     try {
-      const response = await fetch('/tasks');
+      const response = await fetch(`/tasks/${userId}`);
       const tasksData = await response.json();
       setData((prevData) => ({ ...prevData, tasks: tasksData }));
     } catch (error) {
@@ -128,12 +129,12 @@ const KanbanBoard = () => {
       const id = Date.now(); // Generate a unique ID using epoch time
       const column = parseInt(columnKey)+1;
 
-      const response = await fetch('/tasks/create', {
+      const response = await fetch(`/tasks/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, id, column }),
+        body: JSON.stringify({ name, id, column, userId }),
       });
 
       if (response.status === 200) {

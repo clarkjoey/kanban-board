@@ -62,7 +62,9 @@ async function userExists({auth0Id}) {
 // add a user
 async function createUser({ auth0Id, email, name }) {
   try {
-    const doc = { auth0Id, email, name };
+    // generate id based on epoch time
+    const flowId = new Date().getTime();
+    const doc = { auth0Id, email, name, flowId: flowId };
     const collection = db.collection('Users');
     // add to the DB
     const insertResult = await collection.insertOne(doc);
@@ -80,14 +82,14 @@ async function createUser({ auth0Id, email, name }) {
 
 // all tasks
 // path: /tasks
-async function tasks(){
-    try {
-        const collection = db.collection('Tasks');
-        const result = await collection.find({}).toArray();
-        return result;
-    } catch (error) {
-        throw error;
-    }
+async function tasks(userId) {
+  try {
+    const collection = db.collection('Tasks');
+    const result = await collection.find({ "userId": userId }).toArray();
+    return result;
+  } catch (error) {
+    throw error;
+  }
 }
 
 // all columns
@@ -105,15 +107,15 @@ async function columns(){
 // create a task
 // path: /tasks/create
 // payload: { name, id, column }
-async function create(name, id, column) {
+async function create(name, id, column, userId) {
     try {
-        const doc = { name, id: parseInt(id), description: "-", column: parseInt(column) };
+        const doc = { name, id: parseInt(id), description: "-", column: parseInt(column), userId: userId.toString() };
         const collection = db.collection('Tasks');
         // add to the DB
         const insertResult = await collection.insertOne(doc);
         // return the account info
         if (insertResult.acknowledged) {
-            const findResult = await collection.find({ "name": name }).toArray();
+            const findResult = await collection.find({ "id": id }).toArray();
             return findResult;
         } else {
             return { error: "No documents inserted" }; // no documents were inserted
