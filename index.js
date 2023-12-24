@@ -17,25 +17,25 @@ app.use(session({
 }));
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
-// Local
-app.use(
-  auth({
-    authRequired: false,
-    baseURL: 'http://localhost:3000',
-  })
-);
-
-// // Prod
+// // Local
 // app.use(
 //   auth({
 //     authRequired: false,
-//     auth0Logout: true,
-//     secret: process.env.SECRET,
-//     baseURL: process.env.BASE_URL,
-//     clientID: process.env.CLIENT_ID,
-//     issuerBaseURL: process.env.ISSUER_BASE_URL
+//     baseURL: 'http://localhost:3000',
 //   })
 // );
+
+// Prod
+app.use(
+  auth({
+    authRequired: false,
+    auth0Logout: true,
+    secret: process.env.SECRET,
+    baseURL: process.env.BASE_URL,
+    clientID: process.env.CLIENT_ID,
+    issuerBaseURL: process.env.ISSUER_BASE_URL
+  })
+);
 
 // Middleware
 app.use(express.json()); // JSON parsing
