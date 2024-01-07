@@ -7,94 +7,35 @@ const app = express(); // Express
 
 const { auth, requiresAuth } = require('express-openid-connect'); // Auth0
 
-const session = require('express-session');
-
-app.use(session({
-  secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // for HTTPS use `secure: true`
-}));
-
-// auth router attaches /login, /logout, and /callback routes to the baseURL
-// // Local
-// app.use(
-//   auth({
-//     authRequired: false,
-//     auth0Logout: true,
-//     baseURL: 'http://localhost:3000',
-//   })
-// );
-
-// Prod
-app.use(
-  auth({
-    authRequired: false,
-    auth0Logout: true,
-    secret: process.env.SECRET,
-    baseURL: process.env.BASE_URL,
-    clientID: process.env.CLIENT_ID,
-    issuerBaseURL: process.env.ISSUER_BASE_URL
-  })
-);
-
 // Middleware
 app.use(express.json()); // JSON parsing
 app.use(cors()); // Use the cors middleware
 
 // Starting route - handles new user db storage
-app.get('/', requiresAuth(), async (req, res) => {
-  if (!req.session.userProcessed) {
-    console.log("Processing user for the first time");
-    try {
-      const auth0UserId = req.oidc.user.sub;
-      const email = req.oidc.user.email;
-      const name = req.oidc.user.name;
-  
-      let user = await dal.userExists({ auth0Id: auth0UserId });
-      if (!user) {
-        // Create a new user in MongoDB
-        let newUser = await dal.createUser({
-          auth0Id: auth0UserId,
-          email: email,
-          name: name,
-        });
-        console.log(newUser);
-      } else {
-        console.log("user exists")
-      }
-    } catch (error) {
-      console.error('Error querying MongoDB:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-    req.session.userProcessed = true;
-  } 
+app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
-app.get('/profile', requiresAuth(), async (req, res) => {
+// Serve static files from the React app in the 'client/build' directory
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Check if user exists, if not add to the DB
+app.post('/user', async (req, res) => {
   try {
-    const auth0UserId = req.oidc.user.sub;
-    const user = await dal.userExists({ auth0Id: auth0UserId });
-    if (user) {
-      res.json({ flowId: user[0].flowId, name: user[0].name }); // Send the user ID to the frontend
+    const { email, email_verified, name, nickname, picture, sub, updated_at } = req.body;
+    // query for user
+    const user = await dal.userExists({ sub });
+    if (!user) {
+      console.log("creating new user");
+      // create user
+      const newUser = await dal.createUser(email, email_verified, name, nickname, picture, sub, updated_at);
+      res.status(200).json(newUser[0]);
     } else {
-      res.status(404).json({ error: 'User not found' });
+      console.log("user exists");
+      res.status(200).json(user[0]);
     }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Handles logout and session reset
-app.get('/resetSession', (req, res) => {
-  try {
-    // Reset the session flag
-    req.session.userProcessed = false;
-    res.status(200).json({ message: 'Session reset successfully' });
-  } catch (error) {
-    console.error('Error resetting session:', error);
+    console.error('Error querying MongoDB:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -223,16 +164,6 @@ app.delete('/tasks/remove/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-// Serve static files from the React app in the 'client/build' directory
-app.use(requiresAuth(), express.static(path.join(__dirname, 'client/build')));
-
-
-
-// // Handles any requests that don't match the ones above
-// app.get('*', requiresAuth(), (req, res) => {
-//   res.sendFile(path.join(__dirname, 'client/build/index.html'));
-// });
 
 const port = process.env.PORT || 3000;
 

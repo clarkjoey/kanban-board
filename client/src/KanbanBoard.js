@@ -50,11 +50,11 @@ const KanbanBoard = (props) => {
     fetchData();
   }, []);
 
-  // FOR DEBUGGING
-  // Log data when it changes
-  useEffect(() => {
-    console.log('Updated data:', data);
-  }, [data]);
+  // // FOR DEBUGGING
+  // // Log data when it changes
+  // useEffect(() => {
+  //   console.log('Updated data:', data);
+  // }, [data]);
 
   
   // Function to handle the start of dragging a task
@@ -440,7 +440,7 @@ const KanbanBoard = (props) => {
       {/* add column at the end */}
       <div className="add-column-container-end">
         <button className="btn btn-primary ml-2 add-column-button column-button-end" onClick={() => handleAddColumn()}>
-          <h5 class="display-7 " style={{ margin:"0px" }}>Add stage</h5>
+          <h5 className="display-7" style={{ margin:"0px" }}>Add stage</h5>
           <FontAwesomeIcon icon={faPlus} style={{ marginLeft:"5px" }}/>
         </button>
       </div>

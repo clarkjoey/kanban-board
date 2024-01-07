@@ -46,31 +46,31 @@ async function closeMongoDBConnection() {
 }
 
 // check if user exists
-async function userExists({auth0Id}) {
+async function userExists(flowId) {
   try {
     const collection = db.collection('Users');
-    const result = await collection.find({ "auth0Id": auth0Id }).toArray();
+    const result = await collection.find({ "sub": flowId.sub }).toArray();
     if (result.length === 0) {
       return false;
     }
     return result;
   } catch (error) {
-      throw error;
+    throw error;
   }
 }
 
 // add a user
-async function createUser({ auth0Id, email, name }) {
+async function createUser( email, email_verified, name, nickname, picture, sub, updated_at ) {
   try {
     // generate id based on epoch time
     const flowId = new Date().getTime();
-    const doc = { auth0Id, email, name, flowId: flowId };
+    const doc = { email, email_verified, name, nickname, picture, sub, updated_at, flowId: flowId };
     const collection = db.collection('Users');
     // add to the DB
     const insertResult = await collection.insertOne(doc);
     // return the account info
     if (insertResult.acknowledged) {
-      const findResult = await collection.find({ "email": email }).toArray();
+      const findResult = await collection.find({ "flowId": flowId }).toArray();
       return findResult;
     } else {
         return { error: "No documents inserted" }; // no documents were inserted

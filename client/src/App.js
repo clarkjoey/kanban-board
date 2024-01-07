@@ -1,60 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth0 } from "@auth0/auth0-react";
 import './App.css';
+import Login from './Login';
+import Logout from './Logout';
+import Profile from './Profile';
 import KanbanBoard from './KanbanBoard';
+import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {
   const [userId, setUserId] = useState(null);
-  const [name, setName] = useState(null);
-  // const { logout } = useAuth0();
+  const { isAuthenticated, user } = useAuth0();
 
   useEffect(() => {
-    // Fetch the user ID after the user is authenticated
-    fetch('/profile')
-      .then(response => response.json())
-      .then(data => {
-        setName(data.name);
-        setUserId(data.flowId); // Store the user ID in the state
-      })
-      .catch(error => console.error('Error fetching user profile:', error));
-  }, []);
+    // This will when we are authenticated
+    if (isAuthenticated) {
+      handleLogin(user);
+    } 
+  }, [isAuthenticated, user]);
 
-  useEffect(() => {
-    // This will run whenever userId changes
-    if (userId !== null) {
-      console.log(`User ID is now set to: ${name}`);
-    }
-  }, [userId, name]);
-
-  // function to help logout
-  const resetSession = async () => {
+  const handleLogin = async (userData) => {
     try {
-      await fetch('/resetSession', {
-        method: 'GET'
+      const response = await fetch('/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
       });
-      // logout({ logoutParams: { returnTo: window.location.origin } });
-      // logout();
-      await fetch('/logout');
+
+      if (response.status === 200) {
+        const responseBody = await response.json();
+        setUserId(responseBody.flowId);
+      } else {
+        // Handle errors if necessary
+      }
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('Error creating task:', error);
     }
-  };  
+  }
 
   return (
     <>
-      <nav className="navbar bg-body-tertiary">
+      {isAuthenticated && (<nav className="navbar bg-body-tertiary">
         <div className="container-fluid">
           <img src="/flow-transparent-logo.png" width="64" height="auto" className="d-inline-block align-text-top" alt="App Logo" />
           <div className="nav-item dropdown">
             <div className="nav-link dropdown-toggle" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              {name}
+              <Profile /> 
             </div>  
             <ul className="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-              <li className="dropdown-item" onClick={() => resetSession()}>Logout</li>
+              <li className="dropdown-item"><Logout/></li>
             </ul>
           </div>
         </div>
-      </nav>
+      </nav>)}
+      <Login />
       <div className="App">
         {userId && <KanbanBoard userId={userId} />}
       </div>

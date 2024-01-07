@@ -3,23 +3,29 @@
   padding: 20px;
   width: fit-content;
 }
+
 .add-column-button {
   transform: translateX(-10px);
   height: 38px;
 }
+
 .add-column-container:hover {
-  opacity: 1;
+  /* change opacity to 1 when this is live in prod */
+  opacity: 0; 
   transition: opacity 0.3s ease;
 }
+
 .add-column-container {
   opacity: 0;
   display: grid;
   place-items: center;
   width: 21px;
 }
+
 .add-column-container-end {
   margin: 10px;
 }
+
 .column-button-end {
   display: flex;
   align-items: center;
