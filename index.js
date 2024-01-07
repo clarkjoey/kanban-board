@@ -21,6 +21,7 @@ app.use(session({
 // app.use(
 //   auth({
 //     authRequired: false,
+//     auth0Logout: true,
 //     baseURL: 'http://localhost:3000',
 //   })
 // );
@@ -76,7 +77,7 @@ app.get('/profile', requiresAuth(), async (req, res) => {
     const auth0UserId = req.oidc.user.sub;
     const user = await dal.userExists({ auth0Id: auth0UserId });
     if (user) {
-      res.json({ flowId: user[0].flowId }); // Send the user ID to the frontend
+      res.json({ flowId: user[0].flowId, name: user[0].name }); // Send the user ID to the frontend
     } else {
       res.status(404).json({ error: 'User not found' });
     }
@@ -88,9 +89,14 @@ app.get('/profile', requiresAuth(), async (req, res) => {
 
 // Handles logout and session reset
 app.get('/resetSession', (req, res) => {
-  // Reset the session flag
-  req.session.userProcessed = false;
-  res.redirect('/logout');
+  try {
+    // Reset the session flag
+    req.session.userProcessed = false;
+    res.status(200).json({ message: 'Session reset successfully' });
+  } catch (error) {
+    console.error('Error resetting session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Find All Tasks
