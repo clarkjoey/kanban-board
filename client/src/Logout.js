@@ -7,7 +7,7 @@ function Logout() {
 
   return (
     isAuthenticated && (
-        <div onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+        <div onClick={() => logout({ logoutParams: { returnTo: process.env.BASE_URL } })}>
             Logout
         </div>
     )
