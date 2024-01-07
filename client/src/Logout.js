@@ -7,7 +7,7 @@ function Logout() {
 
   return (
     isAuthenticated && (
-        <div onClick={() => logout()}>
+        <div onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
             Logout
         </div>
     )
