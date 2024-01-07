@@ -1,7 +1,29 @@
 .kanban-board {
   display: flex;
-  /* justify-content: space-around; */
   padding: 20px;
+  width: fit-content;
+}
+.add-column-button {
+  transform: translateX(-10px);
+  height: 38px;
+}
+.add-column-container:hover {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.add-column-container {
+  opacity: 0;
+  display: grid;
+  place-items: center;
+  width: 21px;
+}
+.add-column-container-end {
+  margin: 10px;
+}
+.column-button-end {
+  display: flex;
+  align-items: center;
+  width: max-content;
 }
 
 .kanban-column {
@@ -10,7 +32,13 @@
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
-  margin: 10px;
+}
+
+.kanban-column-title {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .kanban-task-list {

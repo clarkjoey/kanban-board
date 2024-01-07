@@ -81,7 +81,7 @@ async function createUser({ auth0Id, email, name }) {
 }
 
 // all tasks
-// path: /tasks
+// path: /tasks/:userId
 async function tasks(userId) {
   try {
     const collection = db.collection('Tasks');
@@ -93,11 +93,11 @@ async function tasks(userId) {
 }
 
 // all columns
-// path: /columns
-async function columns(){
+// path: /columns/:userId
+async function columns(userId){
     try {
         const collection = db.collection('Columns');
-        const result = await collection.find({}).toArray();
+        const result = await collection.find({ "userId": userId }).toArray();
         return result;
     } catch (error) {
         throw error;
@@ -107,9 +107,15 @@ async function columns(){
 // create a task
 // path: /tasks/create
 // payload: { name, id, column }
-async function create(name, id, column, userId) {
+async function createTask(name, id, column, userId) {
     try {
-        const doc = { name, id: parseInt(id), description: "-", column: parseInt(column), userId: userId.toString() };
+        const doc = { 
+          name, 
+          id: parseInt(id), 
+          description: "-", 
+          column: parseInt(column), 
+          userId: userId.toString() 
+        };
         const collection = db.collection('Tasks');
         // add to the DB
         const insertResult = await collection.insertOne(doc);
@@ -123,6 +129,35 @@ async function create(name, id, column, userId) {
     } catch (error) {
         throw error;
     }
+}
+
+// create a column
+// path: /columns/create
+// payload: { column, inputId, userId }
+async function createColumn(id, column, inputId, userId) {
+  try {
+      const doc = { 
+        id: parseInt(id),
+        column: parseInt(column),
+        inputId, 
+        items: [], 
+        title: "Write a stage name", 
+        userId: userId.toString() 
+      };
+      const collection = db.collection('Columns');
+      // add to the DB
+      const insertResult = await collection.insertOne(doc);
+      // return the account info
+      if (insertResult.acknowledged) {
+          const findResult = await collection.find({ "column": parseInt(column), userId: userId.toString() }).toArray();
+          console.log(findResult);
+          return findResult;
+      } else {
+          return { error: "No documents inserted" }; // no documents were inserted
+      }
+  } catch (error) {
+      throw error;
+  }
 }
 
 // move a task
@@ -151,11 +186,15 @@ async function moveTask(name, id, column) {
 
 // update a column title
 // path: /columns/title
-// payload: { columnId, newTitle }
-async function updateColumnTitle(columnId, newTitle) {
+// payload: { userId, columnId, columnIndex, newTitle }
+async function updateColumnTitle(userId, columnId, columnIndex, newTitle) {
     try {
       const collection = db.collection('Columns');
-      const query = { 'column': columnId }; // Match documents with the specified columnId
+      const query = { 
+        'userId': userId.toString(), 
+        'id': parseInt(columnId), 
+        'column': parseInt(columnIndex) 
+      };
       const update = { $set: { 'title': newTitle } }; // Update the 'title' field
       // Update the column in the DB with the new title
       const updateResult = await collection.updateOne(query, update);
@@ -193,7 +232,7 @@ async function addDescription(id, description) {
 
 // delete a task
 // path: /tasks/remove/:id
-async function remove(id) {
+async function removeTask(id) {
     try {
       const collection = db.collection('Tasks');
       const query = { id: parseInt(id) }; // Match documents with the specified id
@@ -210,14 +249,35 @@ async function remove(id) {
     }
 }
 
+// delete a column
+// path: /columns/remove/:id
+async function removeColumn(id) {
+  try {
+    const collection = db.collection('Columns');
+    const query = { id: parseInt(id) }; // Match documents with the specified id
+    // delete from the DB
+    const deleteResult = await collection.deleteOne(query);
+    // return the result of the delete operation
+    if (deleteResult.deletedCount === 1) {
+      return { message: "Task deleted successfully" };
+    } else {
+      return { error: "Task not found" }; // No matching task was found
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
     tasks,
     columns,
-    create,
+    createTask,
+    createColumn,
     addDescription,
     moveTask,
     updateColumnTitle,
-    remove,
+    removeTask,
+    removeColumn,
     client, // Export the MongoDB client
     connectToMongoDB, // Export the connectToMongoDB function
     closeMongoDBConnection, // Export the closeMongoDBConnection function

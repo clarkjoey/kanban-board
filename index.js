@@ -94,15 +94,6 @@ app.get('/resetSession', (req, res) => {
 });
 
 // Find All Tasks
-app.get('/tasks', async (req, res) => {
-  try {
-    const docs = await dal.tasks();
-    res.send(docs);
-  } catch (error) {
-    console.error('Error querying MongoDB:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 app.get('/tasks/:userId', async (req, res) => {
   try {
     const docs = await dal.tasks(req.params.userId);
@@ -114,9 +105,9 @@ app.get('/tasks/:userId', async (req, res) => {
 });
 
 // Find All Columns
-app.get('/columns', async (req, res) => {
+app.get('/columns/:userId', async (req, res) => {
   try {
-    const docs = await dal.columns();
+    const docs = await dal.columns(req.params.userId);
     res.send(docs);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -125,21 +116,34 @@ app.get('/columns', async (req, res) => {
 });
 
 // Create A Task
-// app.post('/tasks/create', async (req, res) => {
-//   try {
-//     const { name, id, column } = req.body;
-//     const user = await dal.create(name, id, column);
-//     res.send(user);
-//   } catch (error) {
-//     console.error('Error querying MongoDB:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
 app.post('/tasks/create', async (req, res) => {
   try {
     const { name, id, column, userId } = req.body;
-    const user = await dal.create(name, id, column, userId);
+    const user = await dal.createTask(name, id, column, userId);
     res.send(user);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Create A Column
+app.post('/columns/create', async (req, res) => {
+  try {
+    const { id, column, inputId, userId } = req.body;
+    const user = await dal.createColumn(id, column, inputId, userId);
+    res.send(user);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete a column
+app.delete('/columns/remove/:id', async (req, res) => {
+  try {
+    const result = await dal.removeColumn(req.params.id);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -179,10 +183,10 @@ app.post('/tasks/column', async (req, res) => {
 app.post('/columns/title', async (req, res) => {
   try {
     // Extract the necessary data from the request body
-    const { columnId, newTitle } = req.body;
+    const { userId, columnId, columnIndex, newTitle } = req.body;
 
     // Call your function to update the column title
-    const result = await dal.updateColumnTitle(columnId, newTitle);
+    const result = await dal.updateColumnTitle(userId, columnId, columnIndex, newTitle);
 
     // Send the response
     res.status(200).json(result);
@@ -195,7 +199,7 @@ app.post('/columns/title', async (req, res) => {
 // Remove A Task
 app.delete('/tasks/remove/:id', async (req, res) => {
   try {
-    const result = await dal.remove(req.params.id);
+    const result = await dal.removeTask(req.params.id);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
