@@ -15,7 +15,7 @@ root.render(
       domain="dev-42nhciwkn0dhfls6.us.auth0.com"
       clientId="asAVtpimRJQZGxnytykHRyBkhD2iofbu"
       authorizationParams={{
-        redirect_uri: window.location.origin
+        redirect_uri: "https://flowdaily.app"
       }}
     >
       <App />
