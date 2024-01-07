@@ -7,7 +7,7 @@ function Logout() {
 
   return (
     isAuthenticated && (
-        <div onClick={() => logout({ logoutParams: { returnTo: process.env.BASE_URL } })}>
+        <div onClick={() => logout({ logoutParams: { returnTo: "https://flowdaily.app" } })}>
             Logout
         </div>
     )
