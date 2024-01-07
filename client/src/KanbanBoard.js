@@ -309,7 +309,6 @@ const KanbanBoard = (props) => {
       if (response.status === 200) {
         // Fetch columns again to reload all tasks into the columns
         fetchColumns();
-        console.log("fetch columns");
       } else {
         // Handle errors if necessary
       }
@@ -320,7 +319,6 @@ const KanbanBoard = (props) => {
 
   // Function to delete a column
   const handleDeleteColumn = async (columnId) => {
-    console.log(columnId);
     try {
       const response = await fetch(`/columns/remove/${columnId}`, {
         method: 'DELETE',
@@ -329,7 +327,7 @@ const KanbanBoard = (props) => {
       if (response.status === 200) {
         // Fetch columns again to reload all tasks into the columns
         fetchColumns();
-        console.log("fetch columns");
+        handleReorderColumns(); // handles case where a column that's not at the end gets deleted
       } else {
         // Handle errors if necessary
         console.error('Error deleting column:', response.statusText);
@@ -338,6 +336,21 @@ const KanbanBoard = (props) => {
       console.error('Error deleting column:', error);
     }
   };
+
+  const handleReorderColumns = async () => {
+    try {
+      const response = await fetch(`/columns/reorder/${userId}`, {
+        method: 'GET',
+      });
+
+      if (response.status !== 200) {
+        // Handle errors if necessary
+        console.error('Error reordering columns:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error reordering columns:', error);
+    }
+  }
 
   return (
     <div className="kanban-board">

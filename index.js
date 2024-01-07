@@ -115,6 +115,17 @@ app.get('/columns/:userId', async (req, res) => {
   }
 });
 
+// Reorder All Columns
+app.get('/columns/reorder/:userId', async (req, res) => {
+  try {
+    const columns = await dal.reorderColumns(req.params.userId);
+    res.send(columns);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Create A Task
 app.post('/tasks/create', async (req, res) => {
   try {

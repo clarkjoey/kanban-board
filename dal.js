@@ -104,6 +104,42 @@ async function columns(userId){
     }
 }
 
+// reorder columns
+// path: /columns/reorder/:userId
+async function reorderColumns(userId) {
+  try {
+    const collection = db.collection('Columns');
+    const result = await collection.find({ userId: userId }).toArray();
+
+    // Sort the array by the 'column' property in ascending order (low to high)
+    result.sort((a, b) => a.column - b.column);
+
+    // Prepare an array of update operations
+    const updateOperations = result.map((column, index) => ({
+      updateOne: {
+        filter: { userId: userId, id: column.id },
+        update: {
+          $set: {
+            column: index + 1,
+            inputId: `input-${index + 1}`
+          }
+        }
+      }
+    }));
+
+    // Use bulkWrite to execute multiple update operations in a single request
+    const bulkWriteResult = await collection.bulkWrite(updateOperations);
+    if (bulkWriteResult.modifiedCount > 0) {
+      const updateColumns = await collection.find({ "userId": userId }).toArray();
+      return updateColumns;
+    } else {
+      return { error: "Columns already in sequence" }; // No matching task was found
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 // create a task
 // path: /tasks/create
 // payload: { name, id, column }
@@ -150,7 +186,6 @@ async function createColumn(id, column, inputId, userId) {
       // return the account info
       if (insertResult.acknowledged) {
           const findResult = await collection.find({ "column": parseInt(column), userId: userId.toString() }).toArray();
-          console.log(findResult);
           return findResult;
       } else {
           return { error: "No documents inserted" }; // no documents were inserted
@@ -271,6 +306,7 @@ async function removeColumn(id) {
 module.exports = {
     tasks,
     columns,
+    reorderColumns,
     createTask,
     createColumn,
     addDescription,
