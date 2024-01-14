@@ -12,10 +12,10 @@ const root = createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Auth0Provider
-      domain="dev-42nhciwkn0dhfls6.us.auth0.com"
-      clientId="asAVtpimRJQZGxnytykHRyBkhD2iofbu"
+      domain={process.env.REACT_APP_AUTH0_DOMAIN}
+      clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
       authorizationParams={{
-        redirect_uri: "https://flowdaily.app"
+        redirect_uri: process.env.REACT_APP_BASE_URL
       }}
     >
       <App />
