@@ -9,52 +9,50 @@ const KanbanColumn = ({
   draggedItem,
   newTaskText,
   editableCards,
-  editableColumnTitles,
   inputRef,
   userId,
-  handleDragStart,
+  setData,
+  setEditableColumnTitles,
+  setNewTaskText,
+  setDraggedItem,
+  setEditableCards,
   handleDragOver,
   handleDrop,
-  handleNewTaskChange,
-  handleCreateTask,
-  editDescription,
-  saveDescription,
-  handleEditDescription,
-  handleDeleteTask,
-  toggleEditColumnTitle,
-  handleEditColumnTitle,
-  handleInputKeyDown,
-  handleDeleteColumn,
   columnKey, 
   column, 
   isEditableTitle, 
-  tasks
+  tasks,
+  fetchColumns,
+  fetchTasks
 }) => {
-  // for the column title
+  
+  // <KanbanColumnTitle />
   const kanbanColumnTitleProps = {
-    inputRef,
-    toggleEditColumnTitle: toggleEditColumnTitle,
-    handleEditColumnTitle: handleEditColumnTitle,
-    handleInputKeyDown: handleInputKeyDown,
-    handleDeleteColumn: handleDeleteColumn
+    setData,
+    setEditableColumnTitles,
+    fetchColumns,
+    userId,
+    data,
+    inputRef
   };
 
-  // for the new task
+  // <KanbanNewTask />
   const kanbanNewTaskProps = {
-    newTaskText,
-    handleNewTaskChange: handleNewTaskChange,
-    handleCreateTask: handleCreateTask,
+    setNewTaskText,
+    userId,
+    fetchTasks,
+    newTaskText
   };
 
-  // for the task cards
+  // <KanbanTaskCard />
   const kanbanTaskCardProps = {
+    fetchTasks,
+    setEditableCards,
+    setData,
+    setDraggedItem,
+    data,
     tasks,
-    editableCards,
-    handleDragStart: handleDragStart,
-    handleEditDescription: handleEditDescription,
-    saveDescription: saveDescription,
-    editDescription: editDescription,
-    handleDeleteTask: handleDeleteTask,
+    editableCards
   };
 
   return (

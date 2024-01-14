@@ -4,21 +4,90 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import KanbanColumnTitleInput from "./KanbanColumnTitleInput";
 
 const KanbanColumnTitle = ({
+  data,
+  setData,
+  setEditableColumnTitles,
+  fetchColumns,
+  userId,
   inputRef,
-  toggleEditColumnTitle,
-  handleEditColumnTitle,
-  handleInputKeyDown,
-  handleDeleteColumn,
   columnKey,
   column,
-  isEditableTitle,
+  isEditableTitle
 }) => {
-  // for changing title input field
+  
+  // Function to toggle column title editing mode
+  const toggleEditColumnTitle = async (columnIndex) => {
+    // Check if inputRef exists before trying to focus
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    try {
+      const newTitle = data.columns[columnIndex].title;
+      const columnId = data.columns[columnIndex].id;
+      const column = parseInt(columnIndex)+1;
+      // update the column's title
+      const response = await fetch('/columns/title', {
+        method: 'POST', // Use POST to update the title
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, columnId, columnIndex: column, newTitle }),
+      });
+      if (response.status === 200) {
+        fetchColumns();
+        // toggle the edit mode
+        setEditableColumnTitles((prevEditable) => ({
+          ...prevEditable,
+          [columnIndex]: !prevEditable[columnIndex],
+        }));
+      } else {
+        console.error('Error updating column title:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error updating column title:', error);
+    }
+  };
+
+  // Function to delete a column
+  const handleDeleteColumn = async (columnId) => {
+    try {
+      const response = await fetch(`/columns/remove/${columnId}`, {
+        method: 'DELETE',
+      });
+      if (response.status === 200) {
+        // reset column order on the backend - handles case where a column that's not at the end gets deleted
+        handleReorderColumns();
+      } else {
+        console.error('Error deleting column:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting column:', error);
+    }
+  };
+
+  // Function to reorder the columns so there are no empty indexes
+  const handleReorderColumns = async () => {
+    try {
+      const response = await fetch(`/columns/reorder/${userId}`, {
+        method: 'GET',
+      });
+      if (response.status === 200) {
+        // show reset columns on frontend
+        fetchColumns();
+      } else {
+        console.error('Error reordering columns:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error reordering columns:', error);
+    }
+  }
+
+  // <KanbanColumnTitleInput />
   const kanbanColumnTitleInputProps = {
+    data,
+    setData,
     inputRef,
     toggleEditColumnTitle: toggleEditColumnTitle,
-    handleEditColumnTitle: handleEditColumnTitle,
-    handleInputKeyDown: handleInputKeyDown,
   };
 
   return (
