@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import KanbanColumn from './KanbanColumn';
+import KanbanAddColumnButtonEnd from './KanbanAddColumnButtonEnd';
 
 const KanbanBoard = (props) => {
   const [data, setData] = useState(null);
@@ -68,7 +67,7 @@ const KanbanBoard = (props) => {
   const handleDragEnter = (e, columnId) => {
     if (draggedItem) {
       const { item, columnId: sourceColumnId } = draggedItem;
-      
+
       // Send a POST request to move the task to the destination column
       moveTaskToColumn(item.name, item.id, (parseInt(columnId)+1));
 
@@ -326,9 +325,8 @@ const KanbanBoard = (props) => {
       });
 
       if (response.status === 200) {
-        // Fetch columns again to reload all tasks into the columns
-        fetchColumns();
-        handleReorderColumns(); // handles case where a column that's not at the end gets deleted
+        // reset column order on the backend - handles case where a column that's not at the end gets deleted
+        handleReorderColumns();
       } else {
         // Handle errors if necessary
         console.error('Error deleting column:', response.statusText);
@@ -344,7 +342,10 @@ const KanbanBoard = (props) => {
         method: 'GET',
       });
 
-      if (response.status !== 200) {
+      if (response.status === 200) {
+        // show reset columns on frontend
+        fetchColumns();
+      } else {
         // Handle errors if necessary
         console.error('Error reordering columns:', response.statusText);
       }
@@ -353,6 +354,7 @@ const KanbanBoard = (props) => {
     }
   }
 
+  // for the columns
   const kanbanColumnProps = {
     data,
     draggedItem,
@@ -388,12 +390,7 @@ const KanbanBoard = (props) => {
         );
       })}
       {/* add column at the end */}
-      <div className="add-column-container-end">
-        <button className="btn btn-primary ml-2 add-column-button column-button-end" onClick={() => handleAddColumn()}>
-          <h5 className="display-7" style={{ margin:"0px" }}>Add stage</h5>
-          <FontAwesomeIcon icon={faPlus} style={{ marginLeft:"5px" }}/>
-        </button>
-      </div>
+      <KanbanAddColumnButtonEnd {...{handleAddColumn:handleAddColumn}}/>
     </div>
   );  
 };

@@ -9,8 +9,6 @@ import { createRoot } from 'react-dom/client';
 
 const root = createRoot(document.getElementById('root'));
 
-console.log(process.env.REACT_APP_BASE_URL);
-
 root.render(
   <React.StrictMode>
     <Auth0Provider

@@ -3,7 +3,7 @@ import './App.css';
 import Login from './Login';
 import Logout from './Logout';
 import Profile from './Profile';
-import KanbanBoard from './KanbanBoard';
+import KanbanBoard from './kanban-components/KanbanBoard';
 import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {

@@ -5,8 +5,6 @@ const dal = require('./dal');
 
 const app = express(); // Express
 
-const { auth, requiresAuth } = require('express-openid-connect'); // Auth0
-
 // Middleware
 app.use(express.json()); // JSON parsing
 app.use(cors()); // Use the cors middleware
