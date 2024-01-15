@@ -51,7 +51,7 @@ const KanbanColumnTitle = ({
   // Function to delete a column
   const handleDeleteColumn = async (columnId) => {
     try {
-      const response = await fetch(`/columns/remove/${columnId}`, {
+      const response = await fetch(`/${userId}/${columnId}/columns/delete-column`, {
         method: 'DELETE',
       });
       if (response.status === 200) {
@@ -68,7 +68,7 @@ const KanbanColumnTitle = ({
   // Function to reorder the columns so there are no empty indexes
   const handleReorderColumns = async () => {
     try {
-      const response = await fetch(`/columns/reorder/${userId}`, {
+      const response = await fetch(`/${userId}/columns/reorder-all-columns`, {
         method: 'GET',
       });
       if (response.status === 200) {
@@ -82,14 +82,6 @@ const KanbanColumnTitle = ({
     }
   }
 
-  // <KanbanColumnTitleInput />
-  const kanbanColumnTitleInputProps = {
-    data,
-    setData,
-    inputRef,
-    toggleEditColumnTitle: toggleEditColumnTitle,
-  };
-
   return (
     <div className="kanban-column-title">
       <h5
@@ -98,7 +90,7 @@ const KanbanColumnTitle = ({
       >
         {isEditableTitle ? (
           /* change title input field - KanbanColumnTitleInput */
-          <KanbanColumnTitleInput columnKey={columnKey} column={column} {...kanbanColumnTitleInputProps}/>
+          <KanbanColumnTitleInput {...{ data, setData, inputRef, toggleEditColumnTitle, columnKey, column }}/>
         ) : (
           column.title
         )}

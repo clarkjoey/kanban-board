@@ -1,6 +1,7 @@
 import React from "react";
 
 const KanbanNewTask = ({
+  handleReorderAllTasks,
   setNewTaskText,
   userId,
   fetchTasks,
@@ -25,8 +26,7 @@ const KanbanNewTask = ({
       if (response.status === 200) {
         // Clear the input field
         setNewTaskText({ ...newTaskText, [inputId]: '' });
-        // reload all tasks into the columns
-        fetchTasks();
+        handleReorderAllTasks(columnKey);
       } else {
         console.error('Error creating task:', response.statusText);
       }

@@ -8,14 +8,14 @@ const KanbanBoard = (props) => {
   const [newTaskText, setNewTaskText] = useState({});
   const [editableCards, setEditableCards] = useState('');
   const [editableColumnTitles, setEditableColumnTitles] = useState({});
-  const inputRef = useRef(null); // ref for the input field
-  const {userId} = props; // current logged in user
+  const inputRef = useRef(null);
+  const { userId } = props; // current logged in user
 
-  
+
   // Function to fetch tasks from the server
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`/tasks/${userId}`);
+      const response = await fetch(`/${userId}/tasks`);
       const tasksData = await response.json();
       setData((prevData) => ({ ...prevData, tasks: tasksData }));
     } catch (error) {
@@ -26,7 +26,7 @@ const KanbanBoard = (props) => {
   // Function to fetch columns from the server
   const fetchColumns = async () => {
     try {
-      const response = await fetch(`/columns/${userId}`);
+      const response = await fetch(`/${userId}/columns`);
       const columnsData = await response.json();
       setData((prevData) => ({ ...prevData, columns: columnsData }));
     } catch (error) {
@@ -48,59 +48,59 @@ const KanbanBoard = (props) => {
     fetchData();
   }, []);
 
-  // // FOR DEBUGGING
-  // // Log data when it changes
-  // useEffect(() => {
-  //   console.log('Updated data:', data);
-  // }, [data]);
+  // Uncomment this to watch the data state for debugging
+  // Log data when it changes
+  useEffect(() => {
+    console.log('Updated data:', data);
+  }, [data]);
 
-  // Function to handle when a task is dragged into a column
-  const handleDragEnter = (e, columnId) => {
-    if (draggedItem) {
-      const { item, columnId: sourceColumnId } = draggedItem;
+  // // Function to handle when a task is dragged into a column
+  // const handleDragEnter = (e, columnId) => {
+  //   if (draggedItem) {
+  //     const { item, columnId: sourceColumnId } = draggedItem;
+    
+  //     // Send a POST request to move the task to the destination column
+  //     moveTaskToColumn(item.name, item.id, (parseInt(columnId)+1));
 
-      // Send a POST request to move the task to the destination column
-      moveTaskToColumn(item.name, item.id, (parseInt(columnId)+1));
+  //     setDraggedItem(null);
+  //   }
+  // };
 
-      setDraggedItem(null);
-    }
-  };
-
-  // Function to handle drag over (prevents default behavior)
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+  // // Function to handle drag over (prevents default behavior)
+  // const handleDragOver = (e) => {
+  //   e.preventDefault();
+  // };
   
-  // Function to handle dropping a task into a column
-  const handleDrop = (e, columnId) => {
-    handleDragEnter(e, columnId);
-  };
+  // // Function to handle dropping a task into a column
+  // const handleDrop = (e, columnId) => {
+  //   handleDragEnter(e, columnId);
+  // };
 
-  // Function to move a task to a different column
-  const moveTaskToColumn = async (taskName, taskId, destinationColumnId) => {
-    try {
-      const response = await fetch('/tasks/column', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: taskName,
-          id: taskId,
-          column: destinationColumnId,
-        }),
-      });
+  // // Function to move a task to a different column
+  // const moveTaskToColumn = async (taskName, taskId, destinationColumnId) => {
+  //   try {
+  //     const response = await fetch('/tasks/column', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         name: taskName,
+  //         id: taskId,
+  //         column: destinationColumnId,
+  //       }),
+  //     });
 
-      if (response.status === 200) {
-        // Fetch tasks again to reload all tasks into the columns
-        fetchTasks();
-      } else {
-        // Handle errors if necessary
-      }
-    } catch (error) {
-      console.error('Error moving task to column:', error);
-    }
-  };
+  //     if (response.status === 200) {
+  //       // Fetch tasks again to reload all tasks into the columns
+  //       fetchTasks();
+  //     } else {
+  //       // Handle errors if necessary
+  //     }
+  //   } catch (error) {
+  //     console.error('Error moving task to column:', error);
+  //   }
+  // };
 
   // Function to add a column
   const handleAddColumn = async () => {
@@ -135,18 +135,16 @@ const KanbanBoard = (props) => {
   // <KanbanColumns />
   const kanbanColumnProps = {
     data,
-    draggedItem,
     newTaskText,
     editableCards,
     inputRef,
     userId,
+    draggedItem,
     setData,
     setEditableColumnTitles,
     setNewTaskText,
     setDraggedItem,
     setEditableCards,
-    handleDragOver: handleDragOver,
-    handleDrop: handleDrop,
     fetchColumns: fetchColumns,
     fetchTasks: fetchTasks,
   };
@@ -159,10 +157,11 @@ const KanbanBoard = (props) => {
         const tasks = data.tasks.filter((task) => task.column === column.column);
   
         return (
+          /* add column */
           <KanbanColumn columnKey={columnKey} column={column} isEditableTitle={isEditableTitle} tasks={tasks} {...kanbanColumnProps}/>
         );
       })}
-      {/* add column at the end */}
+      {/* button to add column at the end */}
       <KanbanAddColumnButtonEnd {...{handleAddColumn:handleAddColumn}}/>
     </div>
   );  

@@ -6,18 +6,16 @@ import KanbanAddColumnButton from './KanbanAddColumnButton';
 
 const KanbanColumn = ({ 
   data,
-  draggedItem,
   newTaskText,
   editableCards,
   inputRef,
   userId,
+  draggedItem,
   setData,
-  setEditableColumnTitles,
+  setEditableColumnTitles, // Shortened prop name
   setNewTaskText,
   setDraggedItem,
   setEditableCards,
-  handleDragOver,
-  handleDrop,
   columnKey, 
   column, 
   isEditableTitle, 
@@ -25,48 +23,42 @@ const KanbanColumn = ({
   fetchColumns,
   fetchTasks
 }) => {
-  
-  // <KanbanColumnTitle />
-  const kanbanColumnTitleProps = {
-    setData,
-    setEditableColumnTitles,
-    fetchColumns,
-    userId,
-    data,
-    inputRef
+
+  // Function to handle drag over (prevents default behavior)
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
-  // <KanbanNewTask />
-  const kanbanNewTaskProps = {
-    setNewTaskText,
-    userId,
-    fetchTasks,
-    newTaskText
-  };
-
-  // <KanbanTaskCard />
-  const kanbanTaskCardProps = {
-    fetchTasks,
-    setEditableCards,
-    setData,
-    setDraggedItem,
-    data,
-    tasks,
-    editableCards
+  // Function to reorder all the tasks in a column
+  const handleReorderAllTasks = async (columnIndex) => {
+    try {
+      const columnPosition = parseInt(columnIndex)+1;
+      const response = await fetch(`/${userId}/${columnPosition}/tasks/reorder-all-tasks`, {
+        method: 'GET',
+      });
+      if (response.status === 200) {
+        // reload all tasks into the columns
+        fetchTasks();
+      } else {
+        console.error('Error creating task:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error reordering tasks:', error);
+    }
   };
 
   return (
     <>
-      <div key={columnKey} className="kanban-column" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, columnKey)}>
+      <div key={columnKey} className="kanban-column" onDragOver={handleDragOver}>
         {/* column title - KanbanColumnTitle */}
-        <KanbanColumnTitle columnKey={columnKey} column={column} isEditableTitle={isEditableTitle} {...kanbanColumnTitleProps}/>
+        <KanbanColumnTitle {...{ data, setData, setEditableColumnTitles, fetchColumns, userId, inputRef, columnKey, column, isEditableTitle }} />
         {/* new task input field - KanbanNewTask */}
-        <KanbanNewTask columnKey={columnKey} column={column} {...kanbanNewTaskProps}/>
+        <KanbanNewTask {...{ setNewTaskText, userId, fetchTasks, newTaskText, columnKey, column, handleReorderAllTasks }} />
         {/* card container */}
-        <KanbanTaskCard columnKey={columnKey} {...kanbanTaskCardProps}/>
+        <KanbanTaskCard {...{ fetchTasks, setEditableCards, setData, setDraggedItem, data, tasks, editableCards, columnKey, handleReorderAllTasks, userId, draggedItem }} />
       </div>
-      {/* add column in-between columns */}
-      <KanbanAddColumnButton columnKey={columnKey}/>
+      {/* button to add column in-between columns */}
+      <KanbanAddColumnButton columnKey={columnKey} />
     </>
   );
 };

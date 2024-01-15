@@ -51,22 +51,9 @@
   min-height: calc(100vh - 230px);
 }
 
-.kanban-task {
-  background-color: white;
-  padding: 8px;
-  margin: 4px 0;
-  border-radius: 4px;
-  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
-  min-height: 150px;
-}
-
 .button-container {
   display: flex;
   gap: 4px; /* Adjust the value to control the padding between buttons */
-}
-
-.card {
-  margin: 8px 0;
 }
 
 .kanban-task {
@@ -93,4 +80,21 @@
 
 .card-text-area {
   margin-bottom: 1rem;
+}
+
+.drop-area {
+  height: 10px;
+}
+
+.drop-area-child {
+  background-color: red;
+  opacity: 0.5;
+  transform: translateY(-65px);
+  height: 138.5px;
+  z-index: 1;
+  position: relative;
+}
+
+.card {
+  margin: 0 0;
 }

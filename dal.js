@@ -86,7 +86,68 @@ async function tasks(userId) {
   try {
     const collection = db.collection('Tasks');
     const result = await collection.find({ "userId": userId }).toArray();
+    result.sort((a, b) => a.order - b.order);
     return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// reorder task
+// path: /:userId/:taskId/:order/tasks/reorder-task
+async function reorderTask(userId, id, order) {
+  try {
+    const collection = db.collection('Tasks');
+    const query = { 
+      "userId": userId, 
+      "id": parseFloat(id) 
+    };
+    const update = { $set: { 'order': parseFloat(order) } }; // Update the 'title' field
+    // Update the column in the DB with the new title
+    const updateResult = await collection.updateOne(query, update);
+    if (updateResult.modifiedCount === 1) {
+      const updatedTask = await collection.findOne(query);
+      console.log(updatedTask);
+      return updatedTask;
+    } else {
+      return { error: "Column not found" }; // No matching column was found
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+// reorder all tasks
+// path: /:userId/:column/tasks/reorder-all-tasks
+async function reorderAllTasks(column, userId) {
+  try {
+    const collection = db.collection('Tasks');
+    const result = await collection.find({ "userId": userId, "column": parseInt(column) }).toArray();
+    if (result.length === 0) return {};
+    result.sort((a, b) => a.order - b.order);
+    // Prepare an array of update operations
+    const updateOperations = result.map((task, index) => {
+      const updateOperation = {
+        updateOne: {
+          filter: { id: task.id },
+          update: {
+            $set: {
+              order: index + 1,
+            },
+          },
+        },
+      };
+      return updateOperation;
+    });    
+    // Use bulkWrite to execute multiple update operations in a single request
+    const bulkWriteResult = await collection.bulkWrite(updateOperations);
+    if (bulkWriteResult.modifiedCount > 0) {
+      const updateTasks = await collection.find({ "userId": userId, "column": parseInt(column) }).toArray();
+      updateTasks.sort((a, b) => a.order - b.order);
+      return updateTasks;
+    } else {
+      return { error: "Columns already in sequence" }; // No matching task was found
+    }
   } catch (error) {
     throw error;
   }
@@ -149,7 +210,8 @@ async function createTask(name, id, column, userId) {
           name, 
           id: parseInt(id), 
           description: "-", 
-          column: parseInt(column), 
+          column: parseInt(column),
+          order: 0, 
           userId: userId.toString() 
         };
         const collection = db.collection('Tasks');
@@ -176,7 +238,6 @@ async function createColumn(id, column, inputId, userId) {
         id: parseInt(id),
         column: parseInt(column),
         inputId, 
-        items: [], 
         title: "Write a stage name", 
         userId: userId.toString() 
       };
@@ -266,11 +327,11 @@ async function addDescription(id, description) {
 }
 
 // delete a task
-// path: /tasks/remove/:id
-async function removeTask(id) {
+// path: /:userId/:id/tasks/delete-task
+async function removeTask(userId, id) {
     try {
       const collection = db.collection('Tasks');
-      const query = { id: parseInt(id) }; // Match documents with the specified id
+      const query = { userId: userId, id: parseInt(id) }; // Match documents with the specified id
       // delete from the DB
       const deleteResult = await collection.deleteOne(query);
       // return the result of the delete operation
@@ -285,11 +346,11 @@ async function removeTask(id) {
 }
 
 // delete a column
-// path: /columns/remove/:id
-async function removeColumn(id) {
+// path: /:userId/:id/columns/delete-column
+async function removeColumn(userId, id) {
   try {
     const collection = db.collection('Columns');
-    const query = { id: parseInt(id) }; // Match documents with the specified id
+    const query = { userId: userId, id: parseInt(id) }; // Match documents with the specified id
     // delete from the DB
     const deleteResult = await collection.deleteOne(query);
     // return the result of the delete operation
@@ -305,14 +366,16 @@ async function removeColumn(id) {
 
 module.exports = {
     tasks,
-    columns,
-    reorderColumns,
     createTask,
-    createColumn,
+    reorderTask,
+    reorderAllTasks,
     addDescription,
     moveTask,
-    updateColumnTitle,
     removeTask,
+    columns,
+    createColumn,
+    reorderColumns,
+    updateColumnTitle,
     removeColumn,
     client, // Export the MongoDB client
     connectToMongoDB, // Export the connectToMongoDB function

@@ -40,7 +40,7 @@ app.post('/user', async (req, res) => {
 });
 
 // Find All Tasks
-app.get('/tasks/:userId', async (req, res) => {
+app.get('/:userId/tasks', async (req, res) => {
   try {
     const docs = await dal.tasks(req.params.userId);
     res.send(docs);
@@ -50,8 +50,30 @@ app.get('/tasks/:userId', async (req, res) => {
   }
 });
 
+// Reorder Task
+app.get('/:userId/:taskId/:order/tasks/reorder-task', async (req, res) => {
+  try {
+    const task = await dal.reorderTask(req.params.userId,req.params.taskId,req.params.order);
+    res.send(task);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Reorder All Tasks
+app.get('/:userId/:column/tasks/reorder-all-tasks', async (req, res) => {
+  try {
+    const tasks = await dal.reorderAllTasks(req.params.column,req.params.userId);
+    res.send(tasks);
+  } catch (error) {
+    console.error('Error querying MongoDB:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Find All Columns
-app.get('/columns/:userId', async (req, res) => {
+app.get('/:userId/columns', async (req, res) => {
   try {
     const docs = await dal.columns(req.params.userId);
     res.send(docs);
@@ -62,7 +84,7 @@ app.get('/columns/:userId', async (req, res) => {
 });
 
 // Reorder All Columns
-app.get('/columns/reorder/:userId', async (req, res) => {
+app.get('/:userId/columns/reorder-all-columns', async (req, res) => {
   try {
     const columns = await dal.reorderColumns(req.params.userId);
     res.send(columns);
@@ -97,9 +119,9 @@ app.post('/columns/create', async (req, res) => {
 });
 
 // Delete a column
-app.delete('/columns/remove/:id', async (req, res) => {
+app.delete('/:userId/:id/columns/delete-column', async (req, res) => {
   try {
-    const result = await dal.removeColumn(req.params.id);
+    const result = await dal.removeColumn(req.params.userId,req.params.id);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
@@ -154,9 +176,9 @@ app.post('/columns/title', async (req, res) => {
 });
 
 // Remove A Task
-app.delete('/tasks/remove/:id', async (req, res) => {
+app.delete('/:userId/:id/tasks/delete-task', async (req, res) => {
   try {
-    const result = await dal.removeTask(req.params.id);
+    const result = await dal.removeTask(req.params.userId, req.params.id);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error querying MongoDB:', error);
